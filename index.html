@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bridge Collective</title>
+<link rel="preconnect" href="https://googleapis.com">
+<link rel="preconnect" href="https://gstatic.com" crossorigin>
+<link href="https://googleapis.com" rel="stylesheet">
+<style>
+:root {
+--clr-white: #ffffff;
+--clr-bg-cream: #f4f0ea;
+--clr-teal-dark: #06343c;
+--clr-teal-bright: #0c4d58;
+--clr-red-accent: #b82619;
+--clr-gray-card: #111827;
+--clr-text-light: #e2e8f0;
+--fs-body: 16px;
+--fs-small: 14px;
+}
+*, *::before, *::after {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+}
+scroll-behavior: smooth;
+body {
+font-family: 'Inter', sans-serif;
+font-size: var(--fs-body);
+background-color: var(--clr-bg-cream);
+color: #333333;
+line-height: 1.6;
+overflow-x: hidden;
+}
+#appPreloader {
+position: fixed;
+top: 0; left: 0; width: 100%; height: 100%;
+background-color: var(--clr-teal-dark);
+z-index: 5000;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+transition: opacity 0.5s ease, visibility 0.5s;
+}
+#appPreloader.loaded {
+opacity: 0;
+visibility: hidden;
+}
+.preloader-spinner {
+width: 50px;
+height: 50px;
+border: 3px solid rgba(255, 255, 255, 0.1);
+border-radius: 50%;
+border-top-color: var(--clr-white);
+animation: spin 1s ease-in-out infinite;
+margin-bottom: 15px;
+}
+@keyframes spin {
+to { transform: rotate(360deg); }
+}
+.preloader-txt {
+color: var(--clr-white);
+font-size: var(--fs-small);
+font-weight: 500;
+letter-spacing: 0.5px;
+}
+.app-container {
+width: 100%;
+max-width: 1440px;
+margin: 0 auto;
+position: relative;
+}
+.site-header {
+width: 100%;
+padding: 30px 40px;
+position: absolute;
+top: 0;
+left: 0;
+z-index: 500;
+}
+.header-table {
+width: 100%;
+border-collapse: collapse;
+}
+.brand-logo {
+font-weight: 700;
+font-size: 22px;
+color: var(--clr-white);
+text-decoration: none;
+letter-spacing: -0.5px;
+text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+.brand-dot {
+display: inline-block;
+width: 10px;
+height: 10px;
+background-color: var(--clr-red-accent);
+border-radius: 50%;
+margin-right: 8px;
+vertical-align: middle;
+}
+.menu-btn {
+background: none;
+border: none;
+color: var(--clr-white);
+cursor: pointer;
+padding: 8px;
+position: fixed;
+top: 24px;
+right: 40px;
+z-index: 1100;
+filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+}
+.icon-line {
+display: block;
+width: 26px;
+height: 3px;
+background-color: var(--clr-white);
+margin: 5px 0;
+transition: transform 0.2s ease-in-out, background-color 0.2s;
+}
+.menu-btn.active #line1 {
+transform: translateY(4px) rotate(45deg);
+}
+.menu-btn.active #line2 {
+transform: translateY(-4px) rotate(-45deg);
+}
+.nav-panel {
+position: fixed;
+top: 0;
+right: -340px;
+width: 340px;
+height: 100%;
+background-color: var(--clr-teal-dark);
+z-index: 1000;
+padding: 120px 40px 40px 40px;
+transition: right 0.3s ease-in-out;
+border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+.nav-panel.open {
+right: 0;
+}
+.nav-list {
+list-style: none;
+}
+.nav-item {
+margin-bottom: 24px;
+text-align: right;
+}
+.nav-link {
+font-size: 22px;
+font-weight: 600;
+color: var(--clr-white);
+text-decoration: none;
+padding-bottom: 4px;
+border-bottom: 2px solid transparent;
+transition: border-color 0.2s;
+}
+.nav-link:hover {
+border-bottom: 2px solid var(--clr-white);
+}
+.hero-billboard-section {
+width: 100%;
+height: 100vh;
+min-height: 650px;
+position: relative;
+overflow: hidden;
+color: var(--clr-white);
+background-color: #000;
+}
+.hero-carousel-bg-container {
+position: absolute;
+top: 0; left: 0; width: 100%; height: 100%;
+z-index: 1;
+}
+.hero-carousel-slide {
+position: absolute;
+top: 0; left: 0; width: 100%; height: 100%;
+background-size: cover;
+background-position: center;
+opacity: 0;
+transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hero-carousel-slide::after {
+content: '';
+position: absolute;
+top: 0; left: 0; width: 100%; height: 100%;
+background: linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.65));
+}
+.hero-carousel-slide.active {
+opacity: 1;
+}
+.hero-content-alignment-table {
+width: 100%;
+height: 100%;
+border-collapse: collapse;
+position: relative;
+z-index: 5;
+}
+.hero-text-panel-cell {
+padding: 120px 40px 40px 40px;
+vertical-align: middle;
+max-width: 750px;
+}
+.hero-big-caption {
+font-size: 64px;
+font-weight: 700;
+line-height: 1.1;
+color: var(--clr-white);
+letter-spacing: -1.5px;
+max-width: 650px;
+margin-bottom: 30px;
+text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+.btn-red-pill {
+display: inline-block;
+background-color: var(--clr-red-accent);
+color: var(--clr-white);
+text-decoration: none;
+padding: 12px 32px;
+border-radius: 25px;
+font-size: var(--fs-small);
+font-weight: 600;
+transition: background-color 0.2s ease, transform 0.2s ease;
+border: none;
+cursor: pointer;
+}
+.btn-red-pill:hover {
+background-color: #a11f14;
+transform: scale(1.04);
+}
+</style>
+</head>
+<body>
+<!-- System Preloader Shield Layer Element -->
+<div id="appPreloader">
+<div class="preloader-spinner"></div>
+<div class="preloader-txt">LOADING PLATFORM METRICS...</div>
+</div>
+
+<div class="app-container">
+<!-- Global Header Frame Block -->
+<header class="site-header">
+<table class="header-table">
+<tr>
+<td>
+<a href="#home" class="brand-logo"><span class="brand-dot"></span>Bridge Collective</a>
+</td>
+<td style="text-align: right;">
+<button class="menu-btn" id="drawerTrigger" aria-label="Menu Toggle">
+<span class="icon-line" id="line1"></span>
+<span class="icon-line" id="line2"></span>
+</button>
+</td>
+</tr>
+</table>
+</header>
+
+<!-- Updated Hidden Side Drawer Panel Navigation Sheet Layer -->
+<nav class="nav-panel" id="sideNavPanel">
+<ul class="nav-list">
+<li class="nav-item"><a href="#home" class="nav-link">HOME</a></li>
+<li class="nav-item"><a href="#about" class="nav-link">ABOUT US</a></li>
+<li class="nav-item"><a href="#help" class="nav-link">GALLERY</a></li>
+<li class="nav-item"><a href="#help" class="nav-link">FAQ SYSTEM</a></li>
+<li class="nav-item"><a href="#contact" class="nav-link">CONTACT</a></li>
+</ul>
+</nav>
+
+<!-- 1. INTRO HERO 1.5s FADE AUTO-MOVING CAROUSEL SECTION -->
+<section id="home" class="hero-billboard-section">
+<div class="hero-carousel-bg-container">
+<div class="hero-carousel-slide active" style="background-image: url('images/give a smile.jpg');"></div>
+<div class="hero-carousel-slide" style="background-image: url('images/give a smile1.jpg');"></div>
+<div class="hero-carousel-slide" style="background-image: url('images/give them a smile2.jpg');"></div>
+<div class="hero-carousel-slide" style="background-image: url('images/give them a smil3.jpg');"></div>
+</div>
+<table class="hero-content-alignment-table">
+<tr>
+<td class="hero-text-panel-cell">
+<h1 class="hero-big-caption">Your small help make the world better</h1>
+<button class="btn-red-pill" onclick="triggerDynamicTarget('Hero Action Emergency Fund Registration', '500,000')">Donate Now</button>
+</td>
+</tr>
+</table>
+</section>
+
+<!-- 2. INITIATIVES ACTIVE PROGRAMS ROW GRID CONTAINER -->
+<style>
+.content-section {
+width: 100%;
+padding: 80px 40px;
+}
+.section-title-block {
+text-align: center;
+margin-bottom: 50px;
+position: relative;
+}
+.section-title-block h2 {
+font-size: 36px;
+font-weight: 700;
+color: var(--clr-teal-dark);
+display: inline-block;
+margin-bottom: 12px;
+}
+.section-title-block .title-divider {
+width: 80px;
+height: 2px;
+background-color: var(--clr-red-accent);
+margin: 0 auto;
+}
+.grid-table {
+width: 100%;
+border-collapse: separate;
+border-spacing: 25px 0;
+}
+.program-card-cell {
+width: 33.333%;
+vertical-align: top;
+background-color: var(--clr-teal-dark);
+border-radius: 4px;
+overflow: hidden;
+box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.program-card-cell:hover {
+transform: translateY(-8px);
+box-shadow: 0 12px 25px rgba(6, 52, 60, 0.2);
+}
+.card-img-box {
+width: 100%;
+height: 260px;
+overflow: hidden;
+position: relative;
+}
+.card-img-box img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.program-card-cell:hover .card-img-box img {
+transform: scale(1.08);
+}
+.card-body-content {
+padding: 35px 25px;
+text-align: center;
+}
+.card-body-content h3 {
+font-size: 22px;
+font-weight: 700;
+color: var(--clr-white);
+margin-bottom: 18px;
+line-height: 1.3;
+}
+.card-body-content p {
+font-size: var(--fs-small);
+color: #b9cbd0;
+margin-bottom: 25px;
+min-height: 72px;
+line-height: 1.5;
+}
+</style>
+<section class="content-section" id="programs">
+<div class="section-title-block">
+<h2>Our Active Fields</h2>
+<div class="title-divider"></div>
+</div>
+
+<table class="grid-table">
+<tr>
+<td class="program-card-cell">
+<div class="card-img-box">
+<img src="images/classroom.jpg" alt="Orphanage Home Support">
+</div>
+<div class="card-body-content">
+<h3>Orphanage Home Support</h3>
+<p>Our program accommodates children orphaned from natural circumstances and poverty, ensuring they receive housing, healthcare, and safe structures.</p>
+<button class="btn-red-pill" onclick="triggerDynamicTarget('Orphanage Support Funding Package', '50,000')">Learn More</button>
+</div>
+</td>
+
+<td class="program-card-cell">
+<div class="card-img-box">
+<img src="images/orphans.jpg" alt="Sponsor an Orphan">
+</div>
+<div class="card-body-content">
+<h3>Sponsor an Orphan</h3>
+<p>Child sponsorship makes a lasting impact, ensuring a child in our community homes gains consistent access to daily nutrition and support parameters.</p>
+<button class="btn-red-pill" onclick="triggerDynamicTarget('Sponsor an Orphan Monthly Program', '180,000')">Learn More</button>
+</div>
+</td>
+
+<td class="program-card-cell">
+<div class="card-img-box">
+<img src="images/volunteer for food Aid.jpg" alt="Community Outreach">
+</div>
+<div class="card-body-content">
+<h3>Community Outreach</h3>
+<p>Through regional field networks, we empower hurting families in distant rural centers, distributing food aid packs and baseline materials.</p>
+<button class="btn-red-pill" onclick="triggerDynamicTarget('Rural Outreach Food Distribution Pack', '332,000')">Learn More</button>
+</div>
+</td>
+</tr>
+</table>
+</section>
+<style>
+/* Secondary Document Framework Styles and Support Elements Grid Components */
+.video-grid-table {
+width: 100%;
+border-collapse: separate;
+border-spacing: 25px 0;
+margin-top: 24px;
+}
+.video-card-cell {
+width: 33.333%;
+vertical-align: top;
+background-color: #0c1a1d;
+border-radius: 6px;
+overflow: hidden;
+box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.video-media-wrapper {
+width: 100%;
+height: 220px;
+background-color: #000000;
+position: relative;
+}
+.video-media-wrapper video {
+width: 100%;
+height: 100%;
+object-fit: cover;
+display: block;
+}
+.video-card-meta {
+padding: 24px 20px;
+color: var(--clr-white);
+}
+.video-card-meta h4 {
+font-size: 18px;
+font-weight: 700;
+margin-bottom: 8px;
+color: var(--clr-white);
+}
+.video-card-meta p {
+font-size: 13px;
+color: #a3b8cc;
+line-height: 1.4;
+}
+.split-feature-table {
+width: 100%;
+border-collapse: collapse;
+background-color: var(--clr-teal-dark);
+border-radius: 4px;
+overflow: hidden;
+margin-bottom: 60px;
+}
+.split-img-cell {
+width: 50%;
+height: 450px;
+padding: 0;
+overflow: hidden;
+cursor: pointer;
+}
+.split-img-cell img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+display: block;
+transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.split-img-cell:hover img {
+transform: scale(1.05);
+}
+.split-text-cell {
+width: 50%;
+padding: 50px;
+vertical-align: middle;
+color: var(--clr-white);
+}
+.split-text-cell h3 {
+font-size: 32px;
+font-weight: 700;
+margin-bottom: 15px;
+line-height: 1.2;
+}
+.split-subtitle {
+font-size: 20px;
+color: var(--clr-red-accent);
+font-weight: 600;
+margin-bottom: 20px;
+}
+.split-text-cell p {
+font-size: var(--fs-body);
+color: #b9cbd0;
+margin-bottom: 30px;
+line-height: 1.6;
+}
+.btn-outline-white {
+display: inline-block;
+background: transparent;
+color: var(--clr-white);
+border: 1px solid var(--clr-white);
+text-decoration: none;
+padding: 12px 24px;
+font-size: var(--fs-small);
+font-weight: 600;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+transition: background 0.2s, color 0.2s;
+cursor: pointer;
+}
+.btn-outline-white:hover {
+background: var(--clr-white);
+color: var(--clr-teal-dark);
+}
+.twotone-card-cell {
+width: 33.333%;
+vertical-align: top;
+border-radius: 4px;
+overflow: hidden;
+box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+transition: transform 0.3s ease;
+background-color: var(--clr-gray-card);
+}
+.twotone-card-cell:hover {
+transform: translateY(-8px);
+}
+.twotone-top-bar {
+height: 200px;
+padding: 0;
+overflow: hidden;
+position: relative;
+}
+.twotone-top-bar img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+display: block;
+filter: brightness(0.65);
+}
+.twotone-title-overlay {
+position: absolute;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+color: var(--clr-white);
+font-size: 20px;
+font-weight: 700;
+text-align: center;
+width: 90%;
+text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+}
+.twotone-bottom-bar {
+padding: 35px 25px;
+text-align: center;
+color: var(--clr-white);
+}
+.twotone-bottom-bar p {
+font-size: var(--fs-small);
+color: var(--clr-text-light);
+line-height: 1.6;
+margin-bottom: 30px;
+min-height: 72px;
+}
+.bg-alt { background-color: #0b0f19; }
+</style>
+
+<!-- 3. STRATIFIED DOCUMENTARY VIDEO ARCHIVES SECTION -->
+<section class="content-section bg-alt" id="videos">
+<div class="section-wrapper" style="padding:0;">
+<div class="section-title-block">
+<h2 style="color: var(--clr-white);">Documentary Reels</h2>
+<div class="title-divider"></div>
+</div>
+<table class="video-grid-table">
+<tr>
+<td class="video-card-cell">
+<div class="video-media-wrapper">
+<video controls preload="metadata">
+<source src="images/childstudyvideo.mp4" type="video/mp4">
+</video>
+</div>
+<div class="video-card-meta">
+<h4>Child Study Progress</h4>
+<p>Direct tracking logs monitoring literacy advancement cycles and performance parameters inside our partner centers.</p>
+</div>
+</td>
+<td class="video-card-cell">
+<div class="video-media-wrapper">
+<video controls preload="metadata">
+<source src="images/Girlchildneedcare.mp4" type="video/mp4">
+</video>
+</div>
+<div class="video-card-meta">
+<h4>Specialized Care Development</h4>
+<p>Documenting our protective pipelines and critical resources routed toward fragile girl-child environments.</p>
+</div>
+</td>
+<td class="video-card-cell">
+<div class="video-media-wrapper">
+<video controls preload="metadata">
+<source src="images/Their joy is ours.mp4" type="video/mp4">
+</video>
+</div>
+<div class="video-card-meta">
+<h4>Community Outcomes</h4>
+<p>Celebrating growth metrics, structural handovers, and milestone achievements across rural Ugandan networks.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</section>
+
+<!-- 4. CORE FEATURES SPLIT ROW AND RECONSTRUCTED ACTION GRID SECTION -->
+<section class="content-section" id="help" style="background-color: #ede7de;">
+<table class="split-feature-table">
+<tr>
+<td class="split-img-cell" onclick="openLightbox('IMAGE', 'images/teachers.jpg', 'Sponsor Orphans Profile View')">
+<img src="images/teachers.jpg" alt="Sponsor Support">
+</td>
+<td class="split-text-cell">
+<h3>Sponsor Orphans<br>Save Lives</h3>
+<div class="split-subtitle">Education is the First Step</div>
+<p>Ugandan children deserve secure development paths. Sponsoring their structural education parameters guarantees a structured classroom infrastructure environment for the next generation.</p>
+<table style="border-collapse: collapse;">
+<tr>
+<td style="padding-right: 15px;"><button class="btn-outline-white" onclick="triggerDynamicTarget('Direct Lifeline Support Contribution', '150,000')">Donate Now</button></td>
+<td><button class="btn-outline-white" style="background-color: var(--clr-white); color: var(--clr-teal-dark);" onclick="triggerDynamicTarget('Assigned Child Sponsorship Portfolio', '180,000')">Sponsor a Child</button></td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+
+<div class="section-title-block" style="margin-top: 60px;">
+<h2>How You Can Help</h2>
+<div class="title-divider"></div>
+</div>
+
+<table class="grid-table">
+<tr>
+<td class="twotone-card-cell">
+<div class="twotone-top-bar">
+<img src="images/Volunteer with us.jpg" alt="Volunteer With Us">
+<div class="twotone-title-overlay">Volunteer With Us</div>
+</div>
+<div class="twotone-bottom-bar">
+<p>Join our teams on the ground in Kampala. Assist with field execution operations or coordinate strategic material distributions.</p>
+<a href="#contact" class="twotone-action-link">JOIN US</a>
+</div>
+</td>
+
+<td class="twotone-card-cell">
+<div class="twotone-top-bar">
+<img src="images/Support our programes.jpg" alt="Support Our Programs">
+<div class="twotone-title-overlay">Support Our Programs</div>
+</div>
+<div class="twotone-bottom-bar">
+<p>Cover structural program targets to bring textbooks, clean infrastructure supplies, and logistics verification metrics directly to sites.</p>
+<a href="#contact" class="twotone-action-link" onclick="event.preventDefault(); triggerDynamicTarget('General Monthly Partner Fund', '100,000')">GIVE MONTHLY</a>
+</div>
+</td>
+
+<td class="twotone-card-cell">
+<div class="twotone-top-bar">
+<img src="images/Rise awareness.jpg" alt="Raise Awareness">
+<div class="twotone-title-overlay">Raise Awareness</div>
+</div>
+<div class="twotone-bottom-bar">
+<p>Advocate for rural educational equal metrics. Bring high visibility to regional developments across your social networks.</p>
+<a href="#contact" class="twotone-action-link">PARTNER WITH US</a>
+</div>
+</td>
+</tr>
+</table>
+</section>
+<style>
+/* Advanced Hub Footer Elements Layout Module Styles and Action Sheet Controls */
+.hub-footer {
+background-color: #0c1c20;
+color: #aabcc0;
+padding: 60px 40px 30px 40px;
+border-top: 3px solid var(--clr-red-accent);
+}
+.footer-cols-table {
+width: 100%;
+border-collapse: collapse;
+margin-bottom: 40px;
+}
+.footer-col-td {
+width: 25%;
+vertical-align: top;
+padding-right: 30px;
+}
+.footer-col-td h4 {
+color: var(--clr-white);
+font-size: 16px;
+font-weight: 600;
+text-transform: uppercase;
+margin-bottom: 20px;
+letter-spacing: 0.5px;
+}
+.footer-col-td p {
+font-size: var(--fs-small);
+line-height: 1.6;
+margin-bottom: 15px;
+}
+.graphic-box-link {
+background: rgba(255,255,255,0.04);
+border: 1px solid rgba(255,255,255,0.1);
+border-radius: 4px;
+padding: 12px;
+margin-bottom: 12px;
+text-align: center;
+color: var(--clr-white);
+font-size: 12px;
+font-weight: 600;
+cursor: pointer;
+transition: background 0.2s;
+}
+.graphic-box-link:hover {
+background: rgba(255,255,255,0.08);
+}
+.footer-links-list {
+list-style: none;
+}
+.footer-links-list li {
+margin-bottom: 10px;
+}
+.footer-links-list a {
+color: #aabcc0;
+text-decoration: none;
+font-size: var(--fs-small);
+transition: color 0.2s;
+}
+.footer-links-list a:hover {
+color: var(--clr-white);
+}
+.contact-meta-row {
+margin-bottom: 12px;
+font-size: var(--fs-small);
+}
+.contact-meta-row strong {
+color: var(--clr-white);
+display: block;
+margin-bottom: 2px;
+}
+.bottom-copyright-bar {
+border-top: 1px solid rgba(255,255,255,0.06);
+padding-top: 25px;
+font-size: 12px;
+color: #63787c;
+}
+.dynamic-form-overlay {
+position: fixed;
+top: 0; left: 0; width: 100%; height: 100%;
+background: rgba(12, 28, 32, 0.95);
+z-index: 3000;
+display: none;
+align-items: center; justify-content: center;
+padding: 20px;
+}
+.dynamic-form-card {
+background: var(--clr-teal-dark);
+border: 1px solid rgba(255,255,255,0.15);
+border-radius: 6px;
+max-width: 500px;
+width: 100%;
+padding: 40px;
+box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+color: var(--clr-white);
+}
+.dynamic-form-card h3 { font-size: 22px; margin-bottom: 8px; color: var(--clr-white); }
+.dynamic-form-card label { display: block; font-size: 13px; color: #b9cbd0; margin-top: 15px; margin-bottom: 4px; }
+.dynamic-form-card input { width: 100%; padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; color: white; font-size: var(--fs-body); }
+.lightbox-overlay {
+position: fixed;
+top: 0; left: 0; width: 100%; height: 100%;
+background: rgba(6, 52, 60, 0.98);
+z-index: 2500;
+display: none;
+align-items: center; justify-content: center;
+padding: 40px;
+}
+.lightbox-container {
+max-width: 900px; width: 100%; position: relative; text-align: center;
+}
+.lightbox-container img {
+max-width: 100%; max-height: 75vh; border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: none; margin: 0 auto;
+}
+.lightbox-caption { margin-top: 15px; font-size: 18px; color: var(--clr-blue-200); font-weight: 500; }
+.lightbox-close-btn { position: absolute; top: -45px; right: 0; font-size: 42px; color: var(--clr-white); background: none; border: none; cursor: pointer; }
+@media (max-width: 850px) {
+.grid-table, .grid-table tr, .grid-table td,
+.split-feature-table, .split-feature-table tr, .split-feature-table td,
+.footer-cols-table, .footer-cols-table tr, .footer-cols-table td,
+.video-grid-table, .video-grid-table tr, .video-grid-table td {
+display: block; width: 100% !important; height: auto !important; padding-right: 0 !important; border-spacing: 0 !important;
+}
+.program-card-cell, .twotone-card-cell, .video-card-cell { margin-bottom: 30px; width: 100% !important; }
+.split-img-cell { height: 280px; }
+.footer-col-td { margin-bottom: 35px; }
+.hero-big-caption { font-size: 38px; }
+}
+</style>
+
+<!-- 5. HUB FOOTER ARCHITECTURE MODULE -->
+<footer class="hub-footer" id="contact">
+<table class="footer-cols-table">
+<tr>
+<td class="footer-col-td">
+<h4>Help an Orphan</h4>
+<p>Join us to help and cater for the necessities of the orphan and vulnerable children under our development frameworks. We all do better when we work together.</p>
+</td>
+<td class="footer-col-td">
+<h4>Donate to Hub</h4>
+<div class="graphic-box-link" style="border-left: 3px solid #ff9900;" onclick="triggerDynamicTarget('MTN / Airtel Mobile Money Gateway', '50,000')">
+[ MOBILE MONEY: MTN & AIRTEL ]
+</div>
+<div class="graphic-box-link" style="border-left: 3px solid var(--clr-red-accent);" onclick="triggerDynamicTarget('give.net Secure Platform Allocation', '100,000')">
+[ Direct Gateway via give.net ]
+</div>
+</td>
+<td class="footer-col-td">
+<h4>Quick Links</h4>
+<ul class="footer-links-list">
+<li><a href="#home">Bridge Collective Portal</a></li>
+<li><a href="#help">Partner With Us</a></li>
+<li><a href="#programs">Get Involved Pipelines</a></li>
+<li><a href="#videos">Documentary Archives</a></li>
+</ul>
+</td>
+<td class="footer-col-td">
+<h4>Our Contacts</h4>
+<div class="contact-meta-row">
+<strong>Headquarters:</strong>
+Kampala Office, Nakanyonyi Road, Central Region, Uganda
+</div>
+<div class="contact-meta-row">
+<strong>Phone Support Line:</strong>
++256 745 714225
+</div>
+<div class="contact-meta-row">
+<strong>Email Interface:</strong>
+oppotunitysytsems.tech@gmail.com
+</div>
+</td>
+</tr>
+</table>
+
+<table style="width: 100%;" class="bottom-copyright-bar">
+<tr>
+<td>© 2026 Bridge Collective. All Rights Reserved. Code blocks optimized cleanly.</td>
+<td style="text-align: right;" class="footer-right-td">Registered Charity Structure: 12345678</td>
+</tr>
+</table>
+</footer>
+</div>
+
+<!-- Dynamic Targeting Donation Form Modal Container -->
+<div class="dynamic-form-overlay" id="formOverlayLayer" onclick="closeFormTarget()">
+<div class="dynamic-form-card" onclick="event.stopPropagation()">
+<h3>Initiative Commitment Form</h3>
+<p style="font-size: var(--fs-small); color: #b9cbd0;">Your parameter focus configures our resource balancing distribution.</p>
+<form onsubmit="event.preventDefault(); alert('Target distribution metrics saved successfully.'); closeFormTarget();">
+<label>Target Allocation Channel</label>
+<input type="text" id="formTargetChannel" readonly>
+<label>Requested Allocation Base Value (UGX)</label>
+<input type="text" id="formTargetValue">
+<div style="margin-top: 25px; text-align: right;">
+<button type="button" class="btn-outline-white" style="padding: 8px 16px; margin-right: 10px; font-size: 12px;" onclick="closeFormTarget()">Cancel</button>
+<button type="submit" class="btn-red-pill" style="padding: 10px 20px;">Confirm Support</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- Interactive Lightbox Overlays Target Layer Window Module -->
+<div class="lightbox-overlay" id="globalLightboxLayer" onclick="closeLightbox()">
+<div class="lightbox-container" onclick="event.stopPropagation()">
+<button class="lightbox-close-btn" onclick="closeLightbox()">&times;</button>
+<img src="" id="lightboxImgWindow" alt="Lightbox Content View">
+<div class="lightbox-caption" id="lightboxCaptionWindow"></div>
+</div>
+</div>
+
+<script>
+// Window Event Controller to Remove Loader Asset After Component Registration
+window.addEventListener('load', function() {
+const loaderShield = document.getElementById('appPreloader');
+loaderShield.classList.add('loaded');
+});
+
+// Toggle Hidden Side Drawer Panel Link Focus Handler
+const trigger = document.getElementById('drawerTrigger');
+const panel = document.getElementById('sideNavPanel');
+trigger.addEventListener('click', function() {
+const activeState = panel.classList.toggle('open');
+trigger.classList.toggle('active', activeState);
+});
+
+const panelLinks = document.querySelectorAll('.nav-link');
+panelLinks.forEach(link => {
+link.addEventListener('click', () => {
+panel.classList.remove('open');
+trigger.classList.remove('active');
+});
+});
+
+// Automatic Moving Hero Background Carousel Logic with 1.5s Fade Transitions
+const heroSlides = document.querySelectorAll('.hero-carousel-slide');
+let currentSlideIdx = 0;
+
+setInterval(() => {
+if(heroSlides.length > 0) {
+heroSlides[currentSlideIdx].classList.remove('active');
+currentSlideIdx = (currentSlideIdx + 1) % heroSlides.length;
+heroSlides[currentSlideIdx].classList.add('active');
+}
+}, 3500);
+
+// Dynamic Targeting Flow Scripts Logic
+const formOverlay = document.getElementById('formOverlayLayer');
+const formChannelInput = document.getElementById('formTargetChannel');
+const formValueInput = document.getElementById('formTargetValue');
+
+function triggerDynamicTarget(channelLabel, standardAmount) {
+formChannelInput.value = channelLabel;
+formValueInput.value = standardAmount;
+formOverlay.style.display = 'flex';
+}
+function closeFormTarget() {
+formOverlay.style.display = 'none';
+}
+
+// Fullscreen Lightbox Frame Core Logic
+const lboxLayer = document.getElementById('globalLightboxLayer');
+const lboxImage = document.getElementById('lightboxImgWindow');
+const lboxThemeCaption = document.getElementById('lightboxCaptionWindow');
+
+function openLightbox(mediaType, assetPath, referenceDescription) {
+lboxImage.style.display = 'none';
+lboxImage.src = '';
+lboxThemeCaption.textContent = referenceDescription;
+
+if (mediaType === 'IMAGE') {
+lboxImage.src = assetPath;
+lboxImage.style.display = 'block';
+}
+lboxLayer.style.display = 'flex';
+}
+
+function closeLightbox() {
+lboxLayer.style.display = 'none';
+lboxImage.src = '';
+}
+</script>
+</body>
+</html>
